@@ -6,7 +6,7 @@ import {Card, Button, Text, TextInput, Chip } from 'react-native-paper';
 
 
 
-function AddExercise({ navigation }): React.FC { 
+function AddExercise({ navigation }:any): React.FC { 
     return (
         <View style={{padding:20}} > 
             <Card>
