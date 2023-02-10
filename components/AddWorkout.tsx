@@ -1,21 +1,44 @@
-import React, { useState } from 'react';
+import React, { useState, useContext, createContext, useReducer } from 'react';
 import { exercise, exercises } from './Data/Exercise';
+import { workout, workouts} from './Data/Workout';
 import  PredefinedExercises  from './Data/Exercise';
 import { StyleSheet, View } from 'react-native';
 import {Card, Button, Text, TextInput } from 'react-native-paper';
 import DatePicker from 'react-native-date-picker'
 import SelectDropdown from 'react-native-select-dropdown'
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
+import WorkoutReducer from './WorkoutReducer';
 
-function AddWorkout({ navigation }): React.FC {    
+const workoutExercisesList = createContext([]);
+
+const initialState:exercises = [{
+    id: 0,
+    name: "",
+    metrics: [""],
+}];
+
+const workoutContext = createContext<{
+    state: exercises;
+    dispatch: React.Dispatch<any>;
+  }>({
+    state: initialState,
+    dispatch: () => null
+  });
+
+function AddWorkout({ }): React.FC {  
+    const [exerciseList, setExerciseList] = useState([])
+    const [state, dispatch] = useReducer(WorkoutReducer, initialState);
+    
     return (
         <View style={{padding:20}} >
             <Card>
                 <Card.Content>
-
+                    <DateTypePicker></DateTypePicker>
+                    {
+                        JSON.stringify(exerciseList)
+                    }
+                    <ExercisePicker exerciseList={exerciseList}></ExercisePicker>
                 </Card.Content>
-                <DateTypePicker></DateTypePicker>
-                <ExercisePicker></ExercisePicker>
             </Card>
         </View>
     ) as any
@@ -48,14 +71,17 @@ function DateTypePicker(): JSX.Element{
     ) as any
 }
 
-function ExercisePicker() {
-    const exercises = PredefinedExercises.map((ex) => ex.name)
+function ExercisePicker({ exerciseList }:{exerciseList: exercises | undefined}) {
+    const presetExercises = PredefinedExercises.map((ex) => ex.name)
     const [currentExercise, setCurrentExercise] = useState<exercise>();
+
+    let wel:exercises = useContext(workoutExercisesList);
+    
     return (
         <View>
             <View style={{margin:5, flexDirection:'row'}}>
-                <FontAwesome name='plus' size={18} color={'#444'} style={{paddingTop:7, paddingRight:5}}/>
-                <SelectDropdown data={exercises} defaultButtonText='Select an exercise:'
+                {/* <FontAwesome name='plus' size={18} color={'#444'} style={{paddingTop:7, paddingRight:5}}/> */}
+                <SelectDropdown data={presetExercises} defaultButtonText='Select an exercise:'
                     onSelect={(selectedItem, index) => {
                         let ex = PredefinedExercises.find(obj => obj.name === selectedItem)
                         setCurrentExercise(ex);
@@ -71,6 +97,13 @@ function ExercisePicker() {
                 
             </View>
             <MetricsInput mets={currentExercise?.metrics}></MetricsInput>
+            {
+                currentExercise !== null && currentExercise !== undefined 
+                && <Button style={{borderRadius:20, height:40, width:100}} compact buttonColor='#9933ff' textColor='#ffffff'
+                    onPress={() =>(exerciseList?.push(currentExercise))}
+                >Save</Button>
+            }
+            
         </View>
     );
 }
@@ -81,7 +114,7 @@ function MetricsInput({ mets }: { mets: String[] | undefined }) {
             {
                 mets !== undefined && mets.map((met:String) => 
                     <View style={{margin:3, width:'30%'}}> 
-                        <TextInput mode="outlined" label={met.toString()}></TextInput>
+                        <TextInput mode="outlined" style={{height:25}} label={met.toString()}></TextInput>
                     </View>
                 )
             }
@@ -95,7 +128,7 @@ const styles = StyleSheet.create({
     container: {paddingLeft:20, paddingRight:20},
     buttonContainer: { flexDirection:'row'},
     buttonStyle: {width:150, borderRadius: 20,},
-    dropdown1BtnStyle: { width: '80%', height: 30, backgroundColor: '#FFF', borderRadius: 8, borderWidth: 1, borderColor: '#444',},
+    dropdown1BtnStyle: { width: '80%', height: 25, backgroundColor: '#FFF', borderRadius: 8, borderWidth: 1, borderColor: '#444',},
     dropdown1BtnTxtStyle: {color: '#444', textAlign: 'left'},
     dropdown1DropdownStyle: {backgroundColor: '#EFEFEF'},
     dropdown1RowStyle: {backgroundColor: '#EFEFEF', borderBottomColor: '#C5C5C5'},
